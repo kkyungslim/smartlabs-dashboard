@@ -1,0 +1,124 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Smartlabs Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Noto Sans KR',sans-serif;background:#f8f9fa;color:#1a1a2e;font-size:14px}
+.wrap{max-width:1100px;margin:0 auto;padding:20px 16px}
+header{border-bottom:1px solid #e5e7eb;padding-bottom:14px;margin-bottom:20px}
+h1{font-size:20px;font-weight:600}
+.sub{font-size:12px;color:#6b7280;margin-top:3px}
+.metric-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:20px}
+@media(max-width:700px){.metric-grid{grid-template-columns:repeat(2,1fr)}}
+.metric{background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:14px 16px}
+.metric-label{font-size:11px;color:#6b7280;margin-bottom:4px}
+.metric-val{font-size:22px;font-weight:700;color:#111}
+.metric-sub{font-size:10px;color:#9ca3af;margin-top:2px}
+.card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:14px}
+.chart-wrap{position:relative;width:100%;height:210px}
+.tabs{display:flex;gap:6px;margin-bottom:12px}
+.tab{background:transparent;border:1px solid #d1d5db;border-radius:8px;padding:5px 14px;font-size:12px;color:#6b7280;cursor:pointer}
+.tab.active{background:#f3f4f6;color:#111;border-color:#6b7280;font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-size:11px;color:#6b7280;font-weight:500;text-align:right;padding:6px 10px;border-bottom:1px solid #e5e7eb;background:#f9fafb;cursor:pointer;user-select:none}
+th:first-child{text-align:left}
+td{padding:7px 10px;border-bottom:1px solid #f3f4f6;text-align:right;color:#374151}
+td:first-child{text-align:left;font-weight:500}
+tr:hover td{background:#f9fafb;cursor:pointer}
+.bw{display:flex;align-items:center;gap:5px;justify-content:flex-end}
+.mb{height:5px;border-radius:2px;min-width:1px}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px}
+.dg{background:#22c55e}.da{background:#f59e0b}.dr{background:#ef4444}
+.lg{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:#6b7280;margin-bottom:10px}
+.li{display:flex;align-items:center;gap:4px}
+.ls{width:10px;height:10px;border-radius:2px}
+footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:20px;padding-top:14px;border-top:1px solid #e5e7eb}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Smartlabs 블로그 네트워크</h1>
+  <p class="sub">갱신: 2026-06-22 22:10 KST &nbsp;&#183;&nbsp; GA4 방문자 + 공개피드 집계 &nbsp;&#183;&nbsp; 20개 블로그</p>
+</header>
+<div class="metric-grid">
+  <div class="metric"><div class="metric-label">총 포스팅</div><div class="metric-val">516</div><div class="metric-sub">전체 누적</div></div>
+  <div class="metric"><div class="metric-label">오늘 방문자</div><div class="metric-val">8</div><div class="metric-sub">GA4 activeUsers</div></div>
+  <div class="metric"><div class="metric-label">7일 방문자</div><div class="metric-val">140</div><div class="metric-sub">최근 7일 합계</div></div>
+  <div class="metric"><div class="metric-label">30일 방문자</div><div class="metric-val">194</div><div class="metric-sub">최근 30일 합계</div></div>
+  <div class="metric"><div class="metric-label">활성 블로그</div><div class="metric-val" id="ma">—</div><div class="metric-sub">7일 방문자 있음</div></div>
+</div>
+<div class="card">
+  <div class="tabs">
+    <button class="tab active" onclick="setTab('v')">방문자</button>
+    <button class="tab" onclick="setTab('p')">포스팅 수</button>
+  </div>
+  <div class="lg" id="lg">
+    <span class="li"><span class="ls" style="background:#378ADD"></span>오늘</span>
+    <span class="li"><span class="ls" style="background:#1D9E75"></span>7일</span>
+    <span class="li"><span class="ls" style="background:#BA7517"></span>30일</span>
+  </div>
+  <div class="chart-wrap"><canvas id="mc" role="img" aria-label="블로그별 방문자 차트"></canvas></div>
+</div>
+<div class="card">
+  <table>
+    <thead><tr>
+      <th onclick="sb('n')">블로그</th>
+      <th onclick="sb('day1')">오늘</th>
+      <th onclick="sb('day7')">7일</th>
+      <th onclick="sb('day30')">30일</th>
+      <th onclick="sb('total')">포스팅</th>
+      <th>최근발행</th>
+    </tr></thead>
+    <tbody id="tb"></tbody>
+  </table>
+</div>
+<footer>Smartlabs Dashboard &nbsp;&#183;&nbsp; 매일 23:10 자동 갱신 &nbsp;&#183;&nbsp; by David Lim</footer>
+</div>
+<script>
+const B=[{"n":"스마트패밀리","e":"👶","u":"https://smartlabs.kr","hn":"smartlabs.kr","total":37,"last":"2026-06-22","day1":0,"day7":0,"day30":0},{"n":"파이낸스랩","e":"💰","u":"https://finance.smartlabs.kr","hn":"finance.smartlabs.kr","total":41,"last":"2026-06-22","day1":0,"day7":0,"day30":3},{"n":"이지라이프랩","e":"🧾","u":"https://easylife.smartlabs.kr","hn":"easylife.smartlabs.kr","total":28,"last":"2026-06-22","day1":2,"day7":4,"day30":8},{"n":"하우징랩","e":"🏠","u":"https://housing.smartlabs.kr","hn":"housing.smartlabs.kr","total":25,"last":"2026-06-22","day1":0,"day7":0,"day30":14},{"n":"디지털노마드랩","e":"🌐","u":"https://nomad.smartlabs.kr","hn":"nomad.smartlabs.kr","total":30,"last":"2026-06-22","day1":3,"day7":5,"day30":7},{"n":"홈테크랩","e":"🔌","u":"https://hometech.smartlabs.kr","hn":"hometech.smartlabs.kr","total":53,"last":"2026-06-22","day1":0,"day7":0,"day30":2},{"n":"뷰티랩","e":"💄","u":"https://beauty.smartlabs.kr","hn":"beauty.smartlabs.kr","total":43,"last":"2026-06-22","day1":3,"day7":5,"day30":8},{"n":"스타팬덤랩","e":"🎤","u":"https://fandom.smartlabs.kr","hn":"fandom.smartlabs.kr","total":33,"last":"2026-06-22","day1":0,"day7":0,"day30":4},{"n":"꿀팁창고","e":"🍯","u":"https://honeytip.smartlabs.kr","hn":"honeytip.smartlabs.kr","total":55,"last":"2026-06-22","day1":0,"day7":4,"day30":10},{"n":"퓨처스랩","e":"🔮","u":"https://futures.smartlabs.kr","hn":"futures.smartlabs.kr","total":24,"last":"2026-06-22","day1":0,"day7":9,"day30":9},{"n":"알트코인랩","e":"🪙","u":"https://altcoin.smartlabs.kr","hn":"altcoin.smartlabs.kr","total":23,"last":"2026-06-22","day1":0,"day7":17,"day30":17},{"n":"크립토뉴스랩","e":"📰","u":"https://news.smartlabs.kr","hn":"news.smartlabs.kr","total":14,"last":"2026-06-22","day1":0,"day7":6,"day30":6},{"n":"스톡마켓랩","e":"📈","u":"https://stock.smartlabs.kr","hn":"stock.smartlabs.kr","total":13,"last":"2026-06-14","day1":0,"day7":9,"day30":9},{"n":"부업수익노트","e":"💼","u":"https://guide.smartlabs.kr","hn":"guide.smartlabs.kr","total":23,"last":"2026-06-22","day1":0,"day7":4,"day30":20},{"n":"무비드라마랩","e":"🎬","u":"https://movie.smartlabs.kr","hn":"movie.smartlabs.kr","total":12,"last":"2026-06-22","day1":0,"day7":11,"day30":11},{"n":"세금법률랩","e":"⚖️","u":"https://tax.smartlabs.kr","hn":"tax.smartlabs.kr","total":12,"last":"2026-06-22","day1":0,"day7":11,"day30":11},{"n":"헬스라이프랩","e":"🩺","u":"https://health.smartlabs.kr","hn":"health.smartlabs.kr","total":12,"last":"2026-06-22","day1":0,"day7":29,"day30":29},{"n":"AI허브","e":"🤖","u":"https://ai.smartlabs.kr","hn":"ai.smartlabs.kr","total":12,"last":"2026-06-22","day1":0,"day7":8,"day30":8},{"n":"커리어가이드","e":"🧭","u":"https://career.smartlabs.kr","hn":"career.smartlabs.kr","total":12,"last":"2026-06-22","day1":0,"day7":10,"day30":10},{"n":"쇼핑팁스","e":"🛒","u":"https://shopping.smartlabs.kr","hn":"shopping.smartlabs.kr","total":14,"last":"2026-06-22","day1":0,"day7":8,"day30":8}]
+;
+const mx30=Math.max(...B.map(b=>b.day30||0));
+document.getElementById('ma').textContent=B.filter(b=>b.day7>0).length+'/20';
+let sk='day30',sd=-1,tab='v',ci=null;
+function bc(){
+  if(ci)ci.destroy();
+  const s=[...B].sort((a,b)=>b.day30-a.day30);
+  let ds,lg;
+  if(tab==='v'){
+    ds=[{label:'오늘',data:s.map(b=>b.day1),backgroundColor:'#378ADD',borderRadius:2,borderSkipped:false},
+        {label:'7일',data:s.map(b=>b.day7),backgroundColor:'#1D9E75',borderRadius:2,borderSkipped:false},
+        {label:'30일',data:s.map(b=>b.day30),backgroundColor:'#BA7517',borderRadius:2,borderSkipped:false}];
+    lg='<span class="li"><span class="ls" style="background:#378ADD"></span>오늘</span><span class="li"><span class="ls" style="background:#1D9E75"></span>7일</span><span class="li"><span class="ls" style="background:#BA7517"></span>30일</span>';
+  } else {
+    ds=[{label:'포스팅',data:s.map(b=>b.total),backgroundColor:s.map(b=>b.total>30?'#1D9E75':b.total>15?'#BA7517':'#E24B4A'),borderRadius:2,borderSkipped:false}];
+    lg='<span class="li"><span class="ls" style="background:#1D9E75"></span>30개+</span><span class="li"><span class="ls" style="background:#BA7517"></span>16~30개</span><span class="li"><span class="ls" style="background:#E24B4A"></span>15개 이하</span>';
+  }
+  document.getElementById('lg').innerHTML=lg;
+  ci=new Chart(document.getElementById('mc'),{type:'bar',data:{labels:s.map(b=>b.e+' '+b.n),datasets:ds},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+    scales:{x:{ticks:{font:{size:10},maxRotation:45,autoSkip:false},grid:{display:false}},
+            y:{ticks:{font:{size:11}},grid:{color:'rgba(0,0,0,0.05)'}}}}});
+}
+function setTab(t){tab=t;document.querySelectorAll('.tab').forEach((b,i)=>b.classList.toggle('active',(i===0&&t==='v')||(i===1&&t==='p')));bc();}
+function sb(k){if(sk===k)sd*=-1;else{sk=k;sd=-1;}render();}
+function render(){
+  const d=[...B].sort((a,b)=>typeof a[sk]==='string'?a[sk].localeCompare(b[sk])*sd:(b[sk]-a[sk])*sd);
+  document.getElementById('tb').innerHTML=d.map(b=>{
+    const diff=(new Date()-new Date(b.last))/86400000;
+    const dc=diff<=1?'dg':diff<=3?'da':'dr';
+    return '<tr onclick="window.open(\''+b.u+'\',\'_blank\')">'
+      +'<td><span class="dot '+dc+'"></span>'+b.e+' '+b.n+'</td>'
+      +'<td>'+(b.day1||'—')+'</td>'
+      +'<td><div class="bw"><div class="mb" style="width:'+Math.round((b.day7/(mx30||1))*60)+'px;background:#1D9E75"></div>'+(b.day7||'—')+'</div></td>'
+      +'<td><div class="bw"><div class="mb" style="width:'+Math.round((b.day30/(mx30||1))*60)+'px;background:#BA7517"></div>'+(b.day30||'—')+'</div></td>'
+      +'<td>'+b.total+'</td>'
+      +'<td style="color:#9ca3af">'+b.last+'</td></tr>';
+  }).join('');
+}
+bc();render();
+</script></body></html>
