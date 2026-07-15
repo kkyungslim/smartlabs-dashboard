@@ -46,7 +46,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;margin-top:24px;padding-to
 <div class="wrap">
 <header>
   <h1>Smartlabs 블로그 네트워크</h1>
-  <p class="sub">갱신: 2026-07-15 21:26 KST &nbsp;·&nbsp; GA4 실방문자 + 공개피드 집계 &nbsp;·&nbsp; 20개 블로그</p>
+  <p class="sub">갱신: 2026-07-15 23:14 KST &nbsp;·&nbsp; GA4 실방문자 + 공개피드 집계 &nbsp;·&nbsp; 20개 블로그</p>
 </header>
 
 <div class="metric-grid">
@@ -134,7 +134,7 @@ function render(){
   const d=[...BLOGS].sort((a,b)=>typeof a[sortKey]==='string'?a[sortKey].localeCompare(b[sortKey])*sortDir:(b[sortKey]-a[sortKey])*sortDir);
   const tbody=document.getElementById('tbody');
   tbody.innerHTML=d.map(b=>{
-    const diff=(new Date('2026-07-15 21:26'.split(' ')[0])-new Date(b.last))/86400000;
+    const diff=(new Date('2026-07-15 23:14'.split(' ')[0])-new Date(b.last))/86400000;
     const dc=diff<=1?'dg':diff<=3?'da':'dr';
     const bar=maxD30>0?Math.round((b.day30/maxD30)*60):0;
     return '<tr onclick="window.open(\''+b.u+'\',\'_blank\')" style="cursor:pointer">'
